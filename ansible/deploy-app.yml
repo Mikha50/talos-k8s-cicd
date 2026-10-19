@@ -29,10 +29,12 @@
         kubectl rollout status deployment/webapp-deployment -n production-app --timeout=300s
       changed_when: false
 
-    - name: 6. Run Smoke Test (Check WebApp HTTP Response)
-      ansible.builtin.command: curl -s -o /dev/null -w "%{http_code}" http://webapp-service.production-app.svc.cluster.local:8080
+    - name: 6. Run Smoke Test (Check WebApp HTTP Response with Retries)
+      ansible.builtin.command: curl -s -o /dev/null -w "%{http_code}" http://webapp-service.production-app.svc.cluster.local:8080/healthz
       register: http_response
-      failed_when: "'200' not in http_response.stdout"
+      until: http_response.stdout == "200"
+      retries: 15
+      delay: 3
       changed_when: false
 
     - name: 7. Pipeline Success Summary

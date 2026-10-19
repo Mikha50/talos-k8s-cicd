@@ -303,6 +303,12 @@ spec:
         - "pip install --no-cache-dir flask pg8000 && python /app/app.py"
         ports:
         - containerPort: 8080
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 2
         env:
         - name: POSTGRES_HOST
           value: "postgres-service"
