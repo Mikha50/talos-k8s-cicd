@@ -1,5 +1,13 @@
 terraform {
   required_version = ">= 1.5.0"
+
+  # حفظ الـ State تلقائياً داخل Kubernetes Secret دائم ومحمي
+  backend "kubernetes" {
+    secret_suffix     = "prod-app-state"
+    namespace         = "jenkins"
+    in_cluster_config = true
+  }
+
   required_providers {
     kubernetes = {
       source  = "hashicorp/kubernetes"
@@ -8,9 +16,7 @@ terraform {
   }
 }
 
-# الاتصال المباشر بكوبرنيتيس من داخل الـ Pod Agent
 provider "kubernetes" {
-  # عندما يعمل التيرافورم داخل كوبرنيتيس، يقرأ بيانات الاعتماد تلقائياً من الـ ServiceAccount
 }
 
 # 1. إنشاء الـ Namespace الخاص بالتطبيق
