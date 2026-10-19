@@ -21,12 +21,12 @@
 
     - name: 4. Wait for PostgreSQL Pod to be Healthy & Ready
       ansible.builtin.command: >
-        kubectl rollout status deployment/postgres-deployment -n production-app --timeout=120s
+        kubectl rollout status deployment/postgres-deployment -n production-app --timeout=300s
       changed_when: false
 
     - name: 5. Wait for Web Application Pod to be Healthy & Ready
       ansible.builtin.command: >
-        kubectl rollout status deployment/webapp-deployment -n production-app --timeout=120s
+        kubectl rollout status deployment/webapp-deployment -n production-app --timeout=300s
       changed_when: false
 
     - name: 6. Run Smoke Test (Check WebApp HTTP Response)
