@@ -16,6 +16,11 @@ spec:
     tty: true
     securityContext:
       runAsUser: 0
+    env:
+    - name: KUBERNETES_SERVICE_HOST
+      value: "192.168.14.210"
+    - name: KUBERNETES_SERVICE_PORT
+      value: "6443"
   - name: devops
     image: alpine/k8s:1.31.2
     command:
@@ -23,6 +28,11 @@ spec:
     tty: true
     securityContext:
       runAsUser: 0
+    env:
+    - name: KUBERNETES_SERVICE_HOST
+      value: "192.168.14.210"
+    - name: KUBERNETES_SERVICE_PORT
+      value: "6443"
 '''
     }
   }
@@ -37,7 +47,6 @@ spec:
             echo "=========================================================="
             cd terraform
             terraform init
-            terraform plan
             terraform apply -auto-approve
           '''
         }

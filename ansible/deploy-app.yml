@@ -15,11 +15,9 @@
 
     - name: 2. Deploy PostgreSQL Database
       ansible.builtin.command: kubectl apply -f ansible/templates/postgres.yaml
-      register: pg_deploy
 
     - name: 3. Deploy Web Application
       ansible.builtin.command: kubectl apply -f ansible/templates/webapp.yaml
-      register: web_deploy
 
     - name: 4. Wait for PostgreSQL Pod to be Healthy & Ready
       ansible.builtin.command: >
@@ -31,10 +29,8 @@
         kubectl rollout status deployment/webapp-deployment -n production-app --timeout=120s
       changed_when: false
 
-    - name: 6. Run Smoke Test (Check WebApp HTTP 200 via Cluster Service)
-      ansible.builtin.shell: |
-        kubectl run smoke-test --rm -i --restart=Never --image=curlimages/curl:latest -n production-app -- \
-          curl -s -o /dev/null -w "%{http_code}" http://webapp-service.production-app.svc.cluster.local:8080
+    - name: 6. Run Smoke Test (Check WebApp HTTP Response)
+      ansible.builtin.command: curl -s -o /dev/null -w "%{http_code}" http://webapp-service.production-app.svc.cluster.local:8080
       register: http_response
       failed_when: "'200' not in http_response.stdout"
       changed_when: false
