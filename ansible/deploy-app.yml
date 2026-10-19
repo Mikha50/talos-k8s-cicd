@@ -13,36 +13,40 @@
       ansible.builtin.debug:
         msg: "Storage is Ready on Longhorn: {{ pvc_check.stdout_lines[1] }}"
 
-    - name: 2. Deploy PostgreSQL Database
+    - name: 2. Ensure Cilium L2 Announcements & Floating IP Pool
+      ansible.builtin.command: "kubectl apply -f {{ playbook_dir }}/templates/cilium-l2.yaml"
+
+    - name: 3. Deploy PostgreSQL Database
       ansible.builtin.command: "kubectl apply -f {{ playbook_dir }}/templates/postgres.yaml"
 
-    - name: 3. Deploy Web Application
+    - name: 4. Deploy Web Application with LoadBalancer (Unified IP)
       ansible.builtin.command: "kubectl apply -f {{ playbook_dir }}/templates/webapp.yaml"
 
-    - name: 4. Wait for PostgreSQL Pod to be Healthy & Ready
+    - name: 5. Wait for PostgreSQL Pod to be Healthy & Ready
       ansible.builtin.command: >
         kubectl rollout status deployment/postgres-deployment -n production-app --timeout=300s
       changed_when: false
 
-    - name: 5. Wait for Web Application Pod to be Healthy & Ready
+    - name: 6. Wait for Web Application Pod to be Healthy & Ready
       ansible.builtin.command: >
         kubectl rollout status deployment/webapp-deployment -n production-app --timeout=300s
       changed_when: false
 
-    - name: 6. Run Smoke Test (Check WebApp HTTP Response with Retries)
-      ansible.builtin.command: curl -s -o /dev/null -w "%{http_code}" http://webapp-service.production-app.svc.cluster.local:8080/healthz
+    - name: 7. Run Smoke Test (Check Direct Unified Floating IP 192.168.14.216)
+      ansible.builtin.command: curl -s -o /dev/null -w "%{http_code}" http://192.168.14.216/healthz
       register: http_response
       until: http_response.stdout == "200"
-      retries: 15
+      retries: 20
       delay: 3
       changed_when: false
 
-    - name: 7. Pipeline Success Summary
+    - name: 8. Pipeline Success Summary
       ansible.builtin.debug:
         msg:
           - "======================================================="
-          - "🎉 SUCCESS: Application Deployed & Verified by Ansible!"
+          - "🎉 SUCCESS: Application Deployed & Verified on Unified IP!"
+          - "Unified Floating URL: http://192.168.14.216"
           - "HTTP Status Code: {{ http_response.stdout }}"
-          - "Access Web App at: http://192.168.14.211:30088"
           - "Database: PostgreSQL 16 on Longhorn 3-Way Replicated Storage"
+          - "High Availability: Survives any node failure without URL change!"
           - "======================================================="

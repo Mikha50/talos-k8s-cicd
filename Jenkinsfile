@@ -85,7 +85,7 @@ spec:
     success {
       echo "========================================================="
       echo "🎉 CI/CD Pipeline Completed Successfully!"
-      echo "🌐 Access Web App at: http://192.168.14.211:30088"
+      echo "🌐 Access Web App at: http://192.168.14.216"
       echo "💾 Storage: Longhorn 3-Way Replicated Storage is Healthy!"
       echo "========================================================="
     }

@@ -1,0 +1,20 @@
+apiVersion: "cilium.io/v2"
+kind: CiliumLoadBalancerIPPool
+metadata:
+  name: "lan-lb-pool"
+spec:
+  blocks:
+    - cidr: "192.168.14.216/29"
+---
+apiVersion: "cilium.io/v2alpha1"
+kind: CiliumL2AnnouncementPolicy
+metadata:
+  name: "l2-announcement-policy"
+spec:
+  loadBalancerIPs: true
+  interfaces:
+    - "^eth0"
+  nodeSelector:
+    matchExpressions:
+      - key: "node-role.kubernetes.io/control-plane"
+        operator: "Exists"

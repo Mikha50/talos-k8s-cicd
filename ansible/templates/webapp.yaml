@@ -179,7 +179,7 @@ data:
                 <div class="badges">
                     <span class="badge badge-success">● PostgreSQL Connected</span>
                     <span class="badge badge-purple">● Longhorn 3-Way Replicated PVC</span>
-                    <span class="badge">● Talos Kubernetes HA</span>
+                    <span class="badge">● Floating IP: 192.168.14.216</span>
                 </div>
             </header>
 
@@ -238,7 +238,7 @@ data:
             </table>
 
             <div class="footer-info">
-                🔥 <strong>Disaster Test Tip:</strong> Insert a note above, then shut down one Proxmox node. Refresh this page to prove Zero Data Loss!
+                🔥 <strong>Unified Floating IP:</strong> Access this app anytime at <code>http://192.168.14.216</code>
             </div>
         </div>
     </body>
@@ -350,10 +350,10 @@ metadata:
   name: webapp-service
   namespace: production-app
 spec:
-  type: NodePort
+  type: LoadBalancer
   ports:
-  - port: 8080
+  - name: http
+    port: 80
     targetPort: 8080
-    nodePort: 30088
   selector:
     app: webapp
