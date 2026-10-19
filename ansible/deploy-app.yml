@@ -14,10 +14,10 @@
         msg: "Storage is Ready on Longhorn: {{ pvc_check.stdout_lines[1] }}"
 
     - name: 2. Deploy PostgreSQL Database
-      ansible.builtin.command: kubectl apply -f ansible/templates/postgres.yaml
+      ansible.builtin.command: "kubectl apply -f {{ playbook_dir }}/templates/postgres.yaml"
 
     - name: 3. Deploy Web Application
-      ansible.builtin.command: kubectl apply -f ansible/templates/webapp.yaml
+      ansible.builtin.command: "kubectl apply -f {{ playbook_dir }}/templates/webapp.yaml"
 
     - name: 4. Wait for PostgreSQL Pod to be Healthy & Ready
       ansible.builtin.command: >
