@@ -1,0 +1,50 @@
+---
+- name: Deploy Production Application to Talos Kubernetes
+  hosts: localhost
+  gather_facts: false
+
+  tasks:
+    - name: 1. Verify Terraform Infrastructure (Namespace & PVC)
+      ansible.builtin.command: kubectl get pvc postgres-data-pvc -n production-app
+      register: pvc_check
+      changed_when: false
+
+    - name: Show PVC Status from Longhorn
+      ansible.builtin.debug:
+        msg: "Storage is Ready on Longhorn: {{ pvc_check.stdout_lines[1] }}"
+
+    - name: 2. Deploy PostgreSQL Database
+      ansible.builtin.command: kubectl apply -f ansible/templates/postgres.yaml
+      register: pg_deploy
+
+    - name: 3. Deploy Web Application
+      ansible.builtin.command: kubectl apply -f ansible/templates/webapp.yaml
+      register: web_deploy
+
+    - name: 4. Wait for PostgreSQL Pod to be Healthy & Ready
+      ansible.builtin.command: >
+        kubectl rollout status deployment/postgres-deployment -n production-app --timeout=120s
+      changed_when: false
+
+    - name: 5. Wait for Web Application Pod to be Healthy & Ready
+      ansible.builtin.command: >
+        kubectl rollout status deployment/webapp-deployment -n production-app --timeout=120s
+      changed_when: false
+
+    - name: 6. Run Smoke Test (Check WebApp HTTP 200 via Cluster Service)
+      ansible.builtin.shell: |
+        kubectl run smoke-test --rm -i --restart=Never --image=curlimages/curl:latest -n production-app -- \
+          curl -s -o /dev/null -w "%{http_code}" http://webapp-service.production-app.svc.cluster.local:8080
+      register: http_response
+      failed_when: "'200' not in http_response.stdout"
+      changed_when: false
+
+    - name: 7. Pipeline Success Summary
+      ansible.builtin.debug:
+        msg:
+          - "======================================================="
+          - "🎉 SUCCESS: Application Deployed & Verified by Ansible!"
+          - "HTTP Status Code: {{ http_response.stdout }}"
+          - "Access Web App at: http://192.168.14.211:30088"
+          - "Database: PostgreSQL 16 on Longhorn 3-Way Replicated Storage"
+          - "======================================================="
